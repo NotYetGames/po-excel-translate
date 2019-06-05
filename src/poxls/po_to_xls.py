@@ -22,10 +22,10 @@ class CatalogFile(click.Path):
             (locale, path) = value.split(':', 1)
             path = os.path.expanduser(path)
             real_path = super(CatalogFile, self).convert(path, param, ctx)
-            return (locale, polib.pofile(real_path))
+            return (locale, polib.pofile(real_path, encoding='utf-8-sig'))
         else:
             real_path = super(CatalogFile, self).convert(value, param, ctx)
-            catalog = polib.pofile(real_path)
+            catalog = polib.pofile(real_path, encoding='utf-8-sig')
             locale = catalog.metadata.get('Language')
             if not locale:
                 locale = os.path.splitext(os.path.basename(real_path))[0]
