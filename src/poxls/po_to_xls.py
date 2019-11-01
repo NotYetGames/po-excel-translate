@@ -3,6 +3,7 @@ import click
 import polib
 import openpyxl
 from openpyxl.styles import Font
+
 # openpyxl versions < 2.5.0b1
 try:
     from openpyxl.cell import WriteOnlyCell
@@ -13,32 +14,34 @@ from . import ColumnHeaders
 
 class CatalogFile(click.Path):
     def __init__(self):
-        super(CatalogFile, self).__init__(exists=True, dir_okay=False,
-                readable=True)
+        super(CatalogFile, self).__init__(exists=True, dir_okay=False, readable=True)
 
     def convert(self, value, param, ctx):
-        if not os.path.exists(value) and ':' in value:
+        if not os.path.exists(value) and ":" in value:
             # The user passed a <locale>:<path> value
-            (locale, path) = value.split(':', 1)
+            (locale, path) = value.split(":", 1)
             path = os.path.expanduser(path)
             real_path = super(CatalogFile, self).convert(path, param, ctx)
-            return (locale, polib.pofile(real_path, encoding='utf-8-sig'))
-        else:
-            real_path = super(CatalogFile, self).convert(value, param, ctx)
-            catalog = polib.pofile(real_path, encoding='utf-8-sig')
-            locale = catalog.metadata.get('Language')
-            if not locale:
-                locale = os.path.splitext(os.path.basename(real_path))[0]
-            return (locale, catalog)
+            return (locale, polib.pofile(real_path, encoding="utf-8-sig"))
+
+        real_path = super(CatalogFile, self).convert(value, param, ctx)
+        catalog = polib.pofile(real_path, encoding="utf-8-sig")
+        locale = catalog.metadata.get("Language")
+        if not locale:
+            locale = os.path.splitext(os.path.basename(real_path))[0]
+        return (locale, catalog)
 
 
 @click.command()
-@click.option('-c', '--comments', multiple=True,
-        type=click.Choice(['translator', 'extracted', 'reference', 'all']),
-        help='Comments to include in the spreadsheet')
-@click.option('-o', '--output', type=click.File('wb'), default='messages.xlsx',
-        help='Output file', show_default=True)
-@click.argument('catalogs', metavar='CATALOG', nargs=-1, required=True, type=CatalogFile())
+@click.option(
+    "-c",
+    "--comments",
+    multiple=True,
+    type=click.Choice(["translator", "extracted", "reference", "all"]),
+    help="Comments to include in the spreadsheet",
+)
+@click.option("-o", "--output", type=click.File("wb"), default="messages.xlsx", help="Output file", show_default=True)
+@click.argument("catalogs", metavar="CATALOG", nargs=-1, required=True, type=CatalogFile())
 def main(comments, output, catalogs):
     """
     Convert .PO files to an XLSX file.
@@ -65,7 +68,7 @@ def main(comments, output, catalogs):
                 seen.add((msg.msgid, msg.msgctxt))
 
     book = openpyxl.Workbook(write_only=True)
-    sheet = book.create_sheet(title=u'Translations')
+    sheet = book.create_sheet(title="Translations")
 
     row = []
     has_msgctxt_column = has_occurrences_column = has_comment_column = has_tcomment_column = None
@@ -73,13 +76,13 @@ def main(comments, output, catalogs):
         has_msgctxt_column = True
         row.append(ColumnHeaders.msgctxt)
     row.append(ColumnHeaders.msgid)
-    if 'reference' in comments or 'all' in comments:
+    if "reference" in comments or "all" in comments:
         has_occurrences_column = True
         row.append(ColumnHeaders.occurrences)
-    if 'extracted' in comments or 'all' in comments:
+    if "extracted" in comments or "all" in comments:
         has_comment_column = True
         row.append(ColumnHeaders.comment)
-    if 'translator' in comments or 'all' in comments:
+    if "translator" in comments or "all" in comments:
         has_tcomment_column = True
         row.append(ColumnHeaders.tcomment)
 
@@ -89,7 +92,7 @@ def main(comments, output, catalogs):
 
     ref_catalog = catalogs[0][1]
 
-    with click.progressbar(messages, label='Writing catalog to sheet') as todo:
+    with click.progressbar(messages, label="Writing catalog to sheet") as todo:
         for (msgid, msgctxt, message) in todo:
             row = []
             if has_msgctxt_column is not None:
@@ -101,10 +104,10 @@ def main(comments, output, catalogs):
                 if msg is not None:
                     for (entry, lineno) in msg.occurrences:
                         if lineno:
-                            o.append(u'%s:%s' % (entry, lineno))
+                            o.append("%s:%s" % (entry, lineno))
                         else:
                             o.append(entry)
-                row.append(u', '.join(o) if o else None)
+                row.append(", ".join(o) if o else None)
             if has_comment_column:
                 row.append(msg.comment if msg is not None else None)
             if has_tcomment_column:
@@ -114,7 +117,7 @@ def main(comments, output, catalogs):
                 msg = cat.find(msgid, msgctxt=msgctxt)
                 if msg is None:
                     row.append(None)
-                elif 'fuzzy' in msg.flags:
+                elif "fuzzy" in msg.flags:
                     cell = WriteOnlyCell(sheet, value=msg.msgstr)
                     cell.font = fuzzy_font
                     row.append(cell)
@@ -122,9 +125,9 @@ def main(comments, output, catalogs):
                     row.append(msg.msgstr)
             sheet.append(row)
 
-    sheet.freeze_panes = 'B1'
+    sheet.freeze_panes = "B1"
     book.save(output)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
