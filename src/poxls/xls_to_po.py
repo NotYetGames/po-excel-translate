@@ -61,13 +61,13 @@ def main(locale, input_file, output_file):
         row_iterator = sheet.iter_rows()
         headers = [c.value for c in next(row_iterator)]
         headers = dict((b, a) for (a, b) in enumerate(headers))
-        msgctxt_column = headers.get(ColumnHeaders.msgctxt)
-        msgid_column = headers.get(ColumnHeaders.msgid)
-        tcomment_column = headers.get(ColumnHeaders.tcomment)
-        comment_column = headers.get(ColumnHeaders.comment)
+        msgctxt_column = headers.get(ColumnHeaders.message_context)
+        msgid_column = headers.get(ColumnHeaders.message_id)
+        tcomment_column = headers.get(ColumnHeaders.comment_translator)
+        comment_column = headers.get(ColumnHeaders.comment_source)
         msgstr_column = headers.get(locale)
         if msgid_column is None:
-            click.echo('Could not find a "%s" column' % ColumnHeaders.msgid, err=True)
+            click.echo('Could not find a "%s" column' % ColumnHeaders.message_id, err=True)
             continue
         if msgstr_column is None:
             click.echo('Could not find a "%s" column' % locale, err=True)
