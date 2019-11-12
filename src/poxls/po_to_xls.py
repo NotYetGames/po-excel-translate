@@ -5,7 +5,7 @@ import openpyxl
 
 
 from pathlib import Path
-from . import ColumnHeaders, PortableObjectFile, PortableObjectFileToXLSX
+from . import ColumnHeaders, PortableObjectFile, PortableObjectFileToXLSX, CommentType
 
 
 # Widths are in range [0, 200]
@@ -14,8 +14,8 @@ from . import ColumnHeaders, PortableObjectFile, PortableObjectFileToXLSX
     "-c",
     "--comments",
     multiple=True,
-    default=["extracted"],
-    type=click.Choice(["translator", "extracted", "reference", "all"]),
+    default=[str(CommentType.SOURCE)],
+    type=click.Choice([str(i) for i in CommentType.get_all()]),
     help="Comments to include in the spreadsheet",
     show_default=True,
 )
@@ -40,10 +40,14 @@ def main(comments, width_message_context, width_message_id, output, catalogs_pat
     for path in catalogs_paths:
         po_files.append(PortableObjectFile(path))
 
+    comment_types = []
+    for s in comments:
+        comment_types.append(CommentType(s))
+
     output_file_path = Path(output)
     PortableObjectFileToXLSX(
         po_files=po_files,
-        comments_type=comments,
+        comment_types=comment_types,
         output_file_path=output_file_path,
         width_message_context=width_message_context,
         width_message_id=width_message_id,

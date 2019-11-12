@@ -22,6 +22,23 @@ class ColumnHeaders:
     comment_references = "References"
 
 
+@unique
+class CommentType(Enum):
+    # NONE = "None"
+    SOURCE = "Extracted"
+    TRANSLATOR = "Translator"
+    REFERENCES = "References"
+
+    ALL = "All"
+
+    def __str__(self):
+        return self.value
+
+    @classmethod
+    def get_all(cls):
+        return list(cls)
+
+
 class PortableObjectFile:
     """ Represents a po file """
 
@@ -65,7 +82,7 @@ class PortableObjectFileToXLSX:
     def __init__(
         self,
         po_files: List[PortableObjectFile],
-        comments_type: str,
+        comment_types: List[CommentType],
         output_file_path: Path,
         width_message_context: int = 20,
         width_message_id: int = 80,
@@ -83,10 +100,9 @@ class PortableObjectFileToXLSX:
         message_context = namespace, is optional
         message_id = source string to translate
         """
-
         self.po_files = po_files
         self.output_file_path = output_file_path
-        self.comments_type = comments_type
+        self.comment_types = comment_types
 
         # Widths should be in range [0, 200]
         self.width_message_context = width_message_context
@@ -152,13 +168,13 @@ class PortableObjectFileToXLSX:
         columns.append(ColumnHeaders.message_id)
 
         # Headers
-        if "reference" in self.comments_type or "all" in self.comments_type:
+        if CommentType.REFERENCES in self.comment_types or CommentType.ALL in self.comment_types:
             self.has_comment_references = True
             columns.append(ColumnHeaders.comment_references)
-        if "extracted" in self.comments_type or "all" in self.comments_type:
+        if CommentType.SOURCE in self.comment_types or CommentType.ALL in self.comment_types:
             self.has_comment_source = True
             columns.append(ColumnHeaders.comment_source)
-        if "translator" in self.comments_type or "all" in self.comments_type:
+        if CommentType.TRANSLATOR in self.comment_types or CommentType.ALL in self.comment_types:
             self.has_comment_translator = True
             columns.append(ColumnHeaders.comment_translator)
 
@@ -310,7 +326,7 @@ class PortableObjectFileToXLSX:
             if self.has_comment_references:
                 data = []
                 if msg is not None:
-                    for (entry, lineno) in msg.comment_references:
+                    for (entry, lineno) in msg.occurrences:
                         if lineno:
                             data.append("%s:%s" % (entry, lineno))
                         else:
