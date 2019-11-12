@@ -7,6 +7,7 @@ import openpyxl
 from typing import List
 from pathlib import Path
 from enum import Enum, unique
+from collections import OrderedDict
 
 from openpyxl.styles import Font, Alignment, Protection
 from openpyxl.utils import get_column_letter
@@ -355,3 +356,117 @@ class PortableObjectFileToXLSX:
 
     def save(self):
         self.work_book.save(str(self.output_file_path))
+
+
+class XLSXToPortableObjectFile:
+    """
+    Convert an locale from a XLSX file to a .PO file
+    """
+
+    def __init__(
+        self,
+        locale: str,
+        input_file_path: Path,
+        output_file_path: Path,
+        wrap_width: int = 240,
+        copy_metadata_from_target: bool = True,
+    ):
+
+        self.input_file_path = input_file_path
+        self.output_file_path = output_file_path
+        self.copy_metadata_from_target = copy_metadata_from_target
+        self.book = openpyxl.load_workbook(input_file_path)
+
+        # Already has file?
+        existing_po_file = None
+        if output_file_path.exists():
+            existing_po_file = polib.pofile(output_file_path, encoding="utf-8-sig")
+
+        self.po_file = polib.POFile(wrap_width=wrap_width, encoding="utf-8-sig")
+        self.po_file.header = "This file was generated from %s" % input_file_path
+        self.po_file.metadata_is_fuzzy = True
+        self.po_file.metadata = OrderedDict()
+
+        # Copy metadata
+        if copy_metadata_from_target and existing_po_file:
+            self.po_file.metadata = existing_po_file.metadata
+            # self.po_file.merge(existing_po_file)
+
+        self.po_file.metadata["PO-Revision-Date"] = self.po_timestamp(input_file_path)
+        self.po_file.metadata["Content-Type"] = "text/plain; charset=UTF-8"
+        self.po_file.metadata["Content-Transfer-Encoding"] = "8bit"
+        self.po_file.metadata["Language"] = locale
+        self.po_file.metadata["Generated-By"] = "xls-to-po 2.0"
+
+        # Make metadata ordered it ordered
+        self.po_file.metadata = OrderedDict(self.po_file.metadata)
+
+        # Transfer data
+        for sheet in self.book.worksheets:
+            if sheet.max_row < 2:
+                continue
+
+            print("Processing sheet %s" % sheet.title)
+            row_iterator = sheet.iter_rows()
+            headers = [c.value for c in next(row_iterator)]
+            headers = dict((b, a) for (a, b) in enumerate(headers))
+
+            message_context_column_index = headers.get(ColumnHeaders.message_context)
+            message_id_column_index = headers.get(ColumnHeaders.message_id)
+            comment_translator_column_index = headers.get(ColumnHeaders.comment_translator)
+            comment_references_column_index = headers.get(ColumnHeaders.comment_references)
+            comment_column_index = headers.get(ColumnHeaders.comment_source)
+            message_locale_column_index = headers.get(locale)
+
+            if message_id_column_index is None:
+                print('Could not find a "%s" column' % ColumnHeaders.message_id, err=True)
+                continue
+
+            if message_locale_column_index is None:
+                print('Could not find a "%s" column' % locale, err=True)
+                continue
+
+            # Processs each value
+            for row in row_iterator:
+                row = [c.value for c in row]
+                if not row[message_id_column_index]:
+                    continue
+
+                try:
+                    entry = polib.POEntry(
+                        msgid=row[message_id_column_index], msgstr=row[message_locale_column_index] or ""
+                    )
+
+                    if message_context_column_index is not None and row[message_context_column_index]:
+                        entry.msgctxt = row[message_context_column_index]
+                    if comment_translator_column_index:
+                        entry.tcomment = row[comment_translator_column_index]
+                    if comment_column_index:
+                        entry.comment = row[comment_column_index]
+                    if comment_references_column_index:
+                        entry.occurrences = row[comment_references_column_index]
+
+                    self.po_file.append(entry)
+                except IndexError:
+                    print("Row %s is too short" % row)
+
+        if not self.po_file:
+            sys.exit("No messages found, aborting", 1)
+
+        self.save()
+
+    def po_timestamp(self, filename):
+        local = time.localtime(os.stat(filename).st_mtime)
+        offset = -(time.altzone if local.tm_isdst else time.timezone)
+        return "%s%s%s" % (
+            time.strftime("%Y-%m-%d %H:%M", local),
+            "-" if offset < 0 else "+",
+            time.strftime("%H%M", time.gmtime(abs(offset))),
+        )
+
+    def save(self):
+        """
+        Save catalog to a PO file.
+        """
+        self.po_file.save(str(self.output_file_path))
+        # self.output_file.write(str(self.po_file))

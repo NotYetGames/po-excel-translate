@@ -1,12 +1,9 @@
 from setuptools import setup, find_packages
 import sys
 
-version = "1.4.3"
+version = "1.5.0"
 
-install_requires = ["click", "polib", "openpyxl"]
-if sys.version_info < (2, 7):
-    install_requires.append("argparse")
-
+install_requires = ["click", "polib", "openpyxl", 'argparse;python_version<"3.0"']
 setup(
     name="poxls",
     version=version,
