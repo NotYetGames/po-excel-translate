@@ -8,7 +8,7 @@ from typing import List
 from pathlib import Path
 from enum import Enum, unique
 
-from openpyxl.styles import Font, Alignment
+from openpyxl.styles import Font, Alignment, Protection
 from openpyxl.utils import get_column_letter
 from openpyxl.cell import WriteOnlyCell
 
@@ -68,8 +68,13 @@ class PortableObjectFileToXLSX:
         output_file_path: Path,
         width_message_context: int = 25,
         width_message_id: int = 100,
-        width_comments: int = 25,
+        width_message_locale: int = 100,
+        width_comments: int = 50,
+        wrap_message_id: bool = True,
+        wrap_comments: bool = False,
+        wrap_message_locale: bool = True,
         always_write_message_context: bool = False,
+        lock_sheet: bool = False,
         font_regular_name: str = "Verdana",
         font_regular_size: int = 11,
     ):
@@ -85,7 +90,17 @@ class PortableObjectFileToXLSX:
         # Widths should be in range [0, 200]
         self.width_message_context = width_message_context
         self.width_message_id = width_message_id
+        self.width_message_locale = width_message_locale
         self.width_comments = width_comments
+
+        # Wrap options
+        self.wrap_message_id = wrap_message_id
+        self.wrap_comments = wrap_comments
+        self.wrap_message_locale = wrap_message_locale
+
+        # Should we lock some cells for protection
+        self.lock_sheet = lock_sheet
+        self.unlock_message_locale = self.lock_sheet
 
         self.always_write_message_context = always_write_message_context
 
@@ -110,8 +125,9 @@ class PortableObjectFileToXLSX:
         self.font_regular_bold = Font(name=self.font_regular_name, size=self.font_regular_size, bold=True)
         self.font_fuzzy = Font(italic=True, bold=True)
 
-        # Alignment
+        # AlignmentAlignment
         self.alignment_wrap_text = Alignment(wrap_text=True)
+        self.alignment_shrink_to_fit = Alignment(shrink_to_fit=True)
 
         # NOTE: using optimized mode
         self.work_book = openpyxl.Workbook(write_only=True)
@@ -161,12 +177,25 @@ class PortableObjectFileToXLSX:
     def get_columns_indices_comments(self) -> List[int]:
         indices = []
 
+        # index is 1 based
         if self.has_comment_references:
             indices.append(self.column_names.index(ColumnHeaders.comment_references) + 1)
         if self.has_comment_source:
             indices.append(self.column_names.index(ColumnHeaders.comment_source) + 1)
         if self.has_comment_translator:
             indices.append(self.column_names.index(ColumnHeaders.comment_translator) + 1)
+
+        return indices
+
+    def get_column_indices_locales(self) -> List[int]:
+        indices = []
+
+        for f in self.po_files:
+            try:
+                indices.append(self.column_names.index(f.locale) + 1)
+            except ValueError:
+                # Locale does not exist
+                pass
 
         return indices
 
@@ -185,14 +214,30 @@ class PortableObjectFileToXLSX:
     def apply_style(self):
         # NOTE: Because we are using optimized mode we must set these before writing anything
         # https://openpyxl.readthedocs.io/en/stable/optimized.html
-
         # Reference: https://automatetheboringstuff.com/chapter12/
-        # Set size
+
+        # Lock
+        if self.lock_sheet:
+            self.work_sheet.protection.sheet = True
+
+        #
+        # Set sizes
+        #
+
+        # Message context and id
         column_message_context = self.get_column_message_context()
         column_message_id = self.get_column_message_id()
 
         column_message_context.width = self.width_message_context
         column_message_id.width = self.width_message_id
+
+        # Comments
+        for i in self.get_columns_indices_comments():
+            self.work_sheet.column_dimensions[get_column_letter(i)].width = self.width_comments
+
+        # Locales, set the width the same as the message id, as that is the source string
+        for i in self.get_column_indices_locales():
+            self.work_sheet.column_dimensions[get_column_letter(i)].width = self.width_message_locale
 
         # Freeze the first row
         self.work_sheet.freeze_panes = "A2"
@@ -200,30 +245,33 @@ class PortableObjectFileToXLSX:
         # Freeze the first 2 columns
         self.work_sheet.freeze_panes = "C2"
 
-        # Set fonts
-        for i in range(len(self.column_names) + 1):
+        # Set fonts extend to the right + 5
+        for i in range(len(self.column_names) + 5):
             # index is 1 based
             self.work_sheet.column_dimensions[get_column_letter(i + 1)].font = self.font_regular
 
-    def get_cell(self, value) -> WriteOnlyCell:
+    def get_cell(self, value, wrap=False, shrink_to_fit=False, bold=False, unlock=False) -> WriteOnlyCell:
         cell = WriteOnlyCell(self.work_sheet, value=value)
-        cell.font = self.font_regular
-        return cell
 
-    def get_cell_wrapped(self, value) -> WriteOnlyCell:
-        cell = self.get_cell(value)
-        cell.alignment = self.alignment_wrap_text
-        return cell
+        if bold:
+            cell.font = self.font_regular_bold
+        else:
+            cell.font = self.font_regular
 
-    def get_cell_bold(self, value) -> WriteOnlyCell:
-        cell = self.get_cell(value)
-        cell.font = self.font_regular_bold
+        if wrap:
+            cell.alignment = self.alignment_wrap_text
+        elif shrink_to_fit:
+            cell.alignment = self.alignment_shrink_to_fit
+
+        if unlock:
+            cell.protection = Protection(locked=False)
+
         return cell
 
     def write_columns_header(self):
         row = []
         for name in self.column_names:
-            row.append(self.get_cell_bold(name))
+            row.append(self.get_cell(name, bold=True))
 
         self.work_sheet.append(row)
 
@@ -248,46 +296,60 @@ class PortableObjectFileToXLSX:
         for msgid, msgctxt in messages:
             row = []
 
-            # Message namespace
+            # Message context
             if self.has_message_context:
                 row.append(self.get_cell(msgctxt))
 
             # Message id
-            row.append(self.get_cell(msgid))
+            row.append(self.get_cell(msgid, wrap=self.wrap_message_id))
 
             msg = reference_po_file.find(msgid, msgctxt=msgctxt)
 
-            # Metadata columns
+            # Metadata comment columns
             if self.has_comment_references:
-                o = []
+                data = []
                 if msg is not None:
                     for (entry, lineno) in msg.comment_references:
                         if lineno:
-                            o.append("%s:%s" % (entry, lineno))
+                            data.append("%s:%s" % (entry, lineno))
                         else:
-                            o.append(entry)
-                row.append(self.get_cell(", ".join(o) if o else None))
+                            data.append(entry)
+
+                if data:
+                    row.append(
+                        self.get_cell(", ".join(data), wrap=self.wrap_comments, shrink_to_fit=not self.wrap_comments)
+                    )
+                else:
+                    row.append(self.get_cell(None, wrap=self.wrap_comments, shrink_to_fit=not self.wrap_comments))
 
             if self.has_comment_source:
-                row.append(self.get_cell(msg.comment if msg is not None else None))
+                data = None
+                if msg is not None:
+                    data = msg.comment
+                row.append(self.get_cell(data, wrap=self.wrap_comments, shrink_to_fit=not self.wrap_comments))
 
             if self.has_comment_translator:
-                row.append(self.get_cell(msg.tcomment if msg is not None else None))
+                data = None
+                if msg is not None:
+                    data = msg.tcomment
+                row.append(self.get_cell(data, wrap=self.wrap_comments, shrink_to_fit=not self.wrap_comments))
 
             # Write the language rows, aka strings to translate
             for f in self.po_files:
                 po_file = f.po_file
                 msg = po_file.find(msgid, msgctxt=msgctxt)
                 if msg is None:
-                    row.append(self.get_cell(None))
+                    row.append(self.get_cell(None, wrap=self.wrap_message_locale, unlock=self.unlock_message_locale))
                 elif "fuzzy" in msg.flags:
                     # Weird case
                     cell = WriteOnlyCell(self.work_sheet, value=msg.msgstr)
                     cell.font = self.font_fuzzy
-                    row.append(cell)
+                    row.append(cell, unlock=self.unlock_message_locale)
                 else:
                     # Normal case
-                    row.append(self.get_cell_wrapped(msg.msgstr))
+                    row.append(
+                        self.get_cell(msg.msgstr, wrap=self.wrap_message_locale, unlock=self.unlock_message_locale)
+                    )
 
             self.work_sheet.append(row)
 

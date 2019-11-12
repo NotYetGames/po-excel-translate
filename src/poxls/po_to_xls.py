@@ -39,13 +39,16 @@ def main(comments, width_message_context, width_message_id, output, catalogs_pat
     for path in catalogs_paths:
         po_files.append(PortableObjectFile(path))
 
+    output_file_path = Path(output)
     PortableObjectFileToXLSX(
         po_files=po_files,
         comments_type=comments,
-        output_file_path=Path(output),
+        output_file_path=output_file_path,
         width_message_context=width_message_context,
         width_message_id=width_message_id,
     )
+
+    print(f"Generated {output_file_path.absolute()}")
 
 
 if __name__ == "__main__":

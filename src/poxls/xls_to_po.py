@@ -52,7 +52,7 @@ def main(locale, input_file, output_file):
     catalog.metadata["Content-Type"] = "text/plain; charset=UTF-8"
     catalog.metadata["Content-Transfer-Encoding"] = "8bit"
     catalog.metadata["Language"] = locale
-    catalog.metadata["Generated-By"] = "xls-to-po 1.0"
+    catalog.metadata["Generated-By"] = "xls-to-po 2.0"
 
     for sheet in book.worksheets:
         if sheet.max_row < 2:
