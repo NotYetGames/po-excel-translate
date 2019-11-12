@@ -26,7 +26,7 @@ class PortableObjectFile:
     """ Represents a po file """
 
     def __init__(self, file_path, locale=None):
-        self.file_path = file_path
+        self.file_path = str(file_path)
         self.po_file = None
         self.locale = locale
 
@@ -67,9 +67,9 @@ class PortableObjectFileToXLSX:
         po_files: List[PortableObjectFile],
         comments_type: str,
         output_file_path: Path,
-        width_message_context: int = 25,
-        width_message_id: int = 100,
-        width_message_locale: int = 100,
+        width_message_context: int = 20,
+        width_message_id: int = 80,
+        width_message_locale: int = 80,
         width_comments: int = 50,
         wrap_message_id: bool = True,
         wrap_comments: bool = False,

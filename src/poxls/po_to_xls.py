@@ -17,12 +17,13 @@ from . import ColumnHeaders, PortableObjectFile, PortableObjectFileToXLSX
     default=["extracted"],
     type=click.Choice(["translator", "extracted", "reference", "all"]),
     help="Comments to include in the spreadsheet",
+    show_default=True,
 )
 @click.option(
-    "--width-message-context", type=click.IntRange(0, 200), default=25, help="Width of the namespace", show_default=True
+    "--width-message-context", type=click.IntRange(0, 200), default=20, help="Width of the namespace", show_default=True
 )
 @click.option(
-    "--width-message-id", type=click.IntRange(0, 200), default=100, help="Width of the message id", show_default=True
+    "--width-message-id", type=click.IntRange(0, 200), default=80, help="Width of the message id", show_default=True
 )
 @click.option("-o", "--output", type=str, default="messages.xlsx", help="Output file", show_default=True)
 @click.argument("catalogs_paths", metavar="CATALOG", nargs=-1, required=True, type=click.Path())
