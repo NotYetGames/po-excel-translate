@@ -1,5 +1,7 @@
 # Translating via spreadsheets
 
+NOTE: Original code of this was taken from https://github.com/wichert/po-xls
+
 Not all translators are comfortable with using PO-editors such as `Poedit
 <http://www.poedit.net/>`_ or translation tools like `Transifex
 <http://trac.transifex.org/>`_. For them this package provides simple tools to
@@ -22,19 +24,30 @@ The format for spreadsheets is simple:
 The first row contains the column headers. *``xls-to-po`` uses these to locale
 information in the file, so make sure never to change these!*
 
+# Install
+
+## From repository
+```sh
+pip install .
+```
+
+## From pypy
+```sh
+pip install po-excel-translate
+```
 
 # Catalog to spreadshseet
 
 Converting one or more PO-files to an xls file is done with the `po-to-xls`
 command::
 ```sh
-po-to-excel nl.po
+po2xls nl.po
 ```
 
 This will create a new file `messages.xlsx` with the Dutch translations. Multiple
 PO files can be specified::
 ```sh
-po-to-excel -o texts.xlsx zh_CN.po zh_TW.po nl.po
+po2xls -o texts.xlsx zh_CN.po zh_TW.po nl.po
 ```
 
 This will generate a ``texts.xlsx`` file with all simplified Chinese,
@@ -45,7 +58,7 @@ key in the file metadata, falling back to the filename of no language informatio
 is specified. You can override this by explicitly specifying the locale on the
 commandline. For example::
 ```sh
-po-to-excel nl:locales/nl/LC_MESSAGES/mydomain.po
+po2xls nl:locales/nl/LC_MESSAGES/mydomain.po
 ```
 
 This will read ``locales/nl/LC_MESSAGES/mydomain.po`` and treat it as Dutch
@@ -60,7 +73,7 @@ output.
 Translations can be converted back from a spreadsheet into a PO-file using the
 `excel-to-po` command::
 ```sh
-excel-to-po nl texts.xlsx nl.po
+xls2po nl texts.xlsx nl.po
 ```
 
 This will take the Dutch (`nl`) translations from `texts.xls`, and (re)create a
