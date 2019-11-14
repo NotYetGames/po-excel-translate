@@ -1,40 +1,33 @@
 from setuptools import setup, find_packages
 import sys
 
-version = "1.5.0"
+import version
 
-install_requires = ["click", "polib", "openpyxl", 'argparse;python_version<"3.0"']
 setup(
-    name="poxls",
-    version=version,
+    name="po-excel-translate",
+    version=version.__version__,
     description="Convert between Excel and PO files",
-    long_description=open("README.rst").read() + "\n" + open("changes.rst").read(),
+    long_description=open("README.md").read() + "\n" + open("changes.rst").read(),
     classifiers=[
         "Environment :: Console",
         "Intended Audience :: Developers",
         "License :: DFSG approved",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.6",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Intended Audience :: Developers",
         "Intended Audience :: End Users/Desktop",
     ],
-    keywords="translation po gettext Babel lingua",
-    author="Wichert Akkerman",
-    author_email="wichert@wiggy.net",
-    url="https://github.com/wichert/po-xls",
+    keywords="translation po gettext Babel lingua excel portable object",
+    author="Daniel Butum",
+    author_email="daniel@notyet.eu",
+    url="https://github.com/NotYetGames/po-excel-translate",
     license="BSD",
-    packages=find_packages("src"),
-    package_dir={"": "src"},
+    # packages=find_packages(),
+    py_modules=["version", "po_excel_translate", "po2xls", "xls2po"],
     include_package_data=True,
     zip_safe=True,
-    install_requires=install_requires,
-    entry_points="""
-      [console_scripts]
-      po-to-xls = poxls.po_to_xls:main
-      xls-to-po = poxls.xls_to_po:main
-      """,
+    install_requires=["click", "polib", "openpyxl"],
+    entry_points={"console_scripts": ["po2xls=po2xls:main", "xls2po=xls2po:main"]},
+    python_requires=">=3.2",
 )

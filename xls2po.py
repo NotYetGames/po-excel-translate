@@ -5,7 +5,7 @@ import click
 import polib
 import openpyxl
 from pathlib import Path
-from . import XLSXToPortableObjectFile
+from po_excel_translate import XLSXToPortableObjectFile
 
 
 @click.command()

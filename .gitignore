@@ -4,4 +4,7 @@
 *.pyo
 *.pyc
 *.egg
+*.egg-info
 *.swp
+.vscode/
+__pycache__/

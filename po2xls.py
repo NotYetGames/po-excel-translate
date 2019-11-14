@@ -5,7 +5,7 @@ import openpyxl
 
 
 from pathlib import Path
-from . import ColumnHeaders, PortableObjectFile, PortableObjectFileToXLSX, CommentType
+from po_excel_translate import ColumnHeaders, PortableObjectFile, PortableObjectFileToXLSX, CommentType
 
 
 # Widths are in range [0, 200]
