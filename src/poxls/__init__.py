@@ -442,25 +442,36 @@ class XLSXToPortableObjectFile:
                 print('Could not find a "%s" column' % locale, err=True)
                 continue
 
-            # Processs each value
-            for row in row_iterator:
+            # Process each value
+            for row_index, row in enumerate(row_iterator):
                 row = [c.value for c in row]
                 if not row[message_id_column_index]:
                     continue
 
                 try:
-                    entry = polib.POEntry(
-                        msgid=row[message_id_column_index], msgstr=row[message_locale_column_index] or ""
-                    )
+                    msgid = row[message_id_column_index]
+
+                    # Special case, sometimes this is identified as empty object?
+                    msgstr = row[message_locale_column_index]
+
+                    # Empty string most likely
+                    if msgstr is None:
+                        msgstr = ""
+
+                    # Type different than default
+                    if not isinstance(msgstr, str):
+                        print(f"[WARNING][row={row_index}] key={msgid} got value of type = {type(msgstr)}")
+
+                    entry = polib.POEntry(msgid=str(msgid), msgstr=str(msgstr) or "")
 
                     if message_context_column_index is not None and row[message_context_column_index]:
-                        entry.msgctxt = row[message_context_column_index]
+                        entry.msgctxt = str(row[message_context_column_index])
                     if comment_translator_column_index:
-                        entry.tcomment = row[comment_translator_column_index]
+                        entry.tcomment = str(row[comment_translator_column_index])
                     if comment_column_index:
-                        entry.comment = row[comment_column_index]
+                        entry.comment = str(row[comment_column_index])
                     if comment_references_column_index:
-                        entry.occurrences = row[comment_references_column_index]
+                        entry.occurrences = str(row[comment_references_column_index])
 
                     self.po_file.append(entry)
                 except IndexError:
