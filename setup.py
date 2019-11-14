@@ -1,11 +1,11 @@
 from setuptools import setup, find_packages
 import sys
 
-import version
+import po_excel_translate
 
 setup(
     name="po-excel-translate",
-    version=version.__version__,
+    version=po_excel_translate.__version__,
     description="Convert between Excel and PO files",
     long_description=open("README.md").read() + "\n" + open("changes.rst").read(),
     classifiers=[

@@ -1,9 +1,12 @@
+__version__ = "3.0"
+
 import os
 import sys
 import time
 import click
 import polib
 import openpyxl
+
 from typing import List
 from pathlib import Path
 from enum import Enum, unique
@@ -86,11 +89,11 @@ class PortableObjectFileToXLSX:
         output_file_path: Path,
         width_message_context: int = 20,
         width_message_id: int = 80,
-        width_message_locale: int = 80,
+        width_message_translation: int = 80,
         width_comments: int = 50,
         wrap_message_id: bool = True,
         wrap_comments: bool = False,
-        wrap_message_locale: bool = True,
+        wrap_message_translation: bool = True,
         always_write_message_context: bool = False,
         lock_sheet: bool = False,
         font_regular_name: str = "Verdana",
@@ -107,13 +110,13 @@ class PortableObjectFileToXLSX:
         # Widths should be in range [0, 200]
         self.width_message_context = width_message_context
         self.width_message_id = width_message_id
-        self.width_message_locale = width_message_locale
+        self.width_message_translation = width_message_translation
         self.width_comments = width_comments
 
         # Wrap options
         self.wrap_message_id = wrap_message_id
         self.wrap_comments = wrap_comments
-        self.wrap_message_locale = wrap_message_locale
+        self.wrap_message_translation = wrap_message_translation
 
         # Should we lock some cells for protection
         self.lock_sheet = lock_sheet
@@ -252,9 +255,9 @@ class PortableObjectFileToXLSX:
         for i in self.get_columns_indices_comments():
             self.work_sheet.column_dimensions[get_column_letter(i)].width = self.width_comments
 
-        # Locales, set the width the same as the message id, as that is the source string
+        # Translations, set the width the same as the message id, as that is the source string
         for i in self.get_column_indices_locales():
-            self.work_sheet.column_dimensions[get_column_letter(i)].width = self.width_message_locale
+            self.work_sheet.column_dimensions[get_column_letter(i)].width = self.width_message_translation
 
         # Freeze the first row
         self.work_sheet.freeze_panes = "A2"
@@ -356,7 +359,9 @@ class PortableObjectFileToXLSX:
                 po_file = f.po_file
                 msg = po_file.find(msgid, msgctxt=msgctxt)
                 if msg is None:
-                    row.append(self.get_cell(None, wrap=self.wrap_message_locale, unlock=self.unlock_message_locale))
+                    row.append(
+                        self.get_cell(None, wrap=self.wrap_message_translation, unlock=self.unlock_message_locale)
+                    )
                 elif "fuzzy" in msg.flags:
                     # Weird case
                     cell = WriteOnlyCell(self.work_sheet, value=msg.msgstr)
@@ -365,7 +370,7 @@ class PortableObjectFileToXLSX:
                 else:
                     # Normal case
                     row.append(
-                        self.get_cell(msg.msgstr, wrap=self.wrap_message_locale, unlock=self.unlock_message_locale)
+                        self.get_cell(msg.msgstr, wrap=self.wrap_message_translation, unlock=self.unlock_message_locale)
                     )
 
             self.work_sheet.append(row)
@@ -412,7 +417,7 @@ class XLSXToPortableObjectFile:
         self.po_file.metadata["Content-Type"] = "text/plain; charset=UTF-8"
         self.po_file.metadata["Content-Transfer-Encoding"] = "8bit"
         self.po_file.metadata["Language"] = locale
-        self.po_file.metadata["Generated-By"] = "xls-to-po 2.0"
+        self.po_file.metadata["Generated-By"] = f"xls2po {__version__}"
 
         # Make metadata ordered it ordered
         self.po_file.metadata = OrderedDict(self.po_file.metadata)

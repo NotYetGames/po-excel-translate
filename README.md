@@ -21,7 +21,7 @@ The format for spreadsheets is simple:
 * A column with the translated text for each locale. Fuzzy translations are
   marked in italic.
 
-The first row contains the column headers. *``xls-to-po`` uses these to locale
+**IMPORTANT:** The first row contains the column headers. *``xls2po`` uses these to locale
 information in the file, so make sure never to change these!*
 
 # Install
