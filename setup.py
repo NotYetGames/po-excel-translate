@@ -7,7 +7,7 @@ setup(
     name="po-excel-translate",
     version=po_excel_translate.__version__,
     description="Convert between Excel and PO files",
-    long_description=open("README.md").read() + "\n" + open("changes.rst").read(),
+    long_description=open("README.md").read() + "\n" + open("CHANGES.md").read(),
     classifiers=[
         "Environment :: Console",
         "Intended Audience :: Developers",

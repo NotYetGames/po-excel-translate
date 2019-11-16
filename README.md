@@ -1,6 +1,5 @@
 # Translating via spreadsheets
 
-NOTE: Original code of this was taken from https://github.com/wichert/po-xls
 
 Not all translators are comfortable with using PO-editors such as [Poedit]
 (http://www.poedit.net/) or translation tools like [Transifex](http://trac.transifex.org/). For them this package provides simple tools to
@@ -23,6 +22,38 @@ The format for spreadsheets is simple:
 **IMPORTANT:** The first row contains the column headers. *``xls2po`` uses these to locale
 information in the file, so make sure never to change these!*
 
+# Comparison
+
+NOTE: Original code of this was taken from https://github.com/wichert/po-xls
+
+Advantages of this implementation:
+- sane defaults
+- the first row and first columns are freezed so that you can always see the source string you want to translate
+- customizable options like width/wrap/protected ranges/fonts
+- can use the exporter/importer from another python project, you just import the library after installing it:
+```py
+from pathlib import Path
+import po_excel_translate as poet
+
+# po2xls
+po_files_to_convert = [
+	poet.PortableObjectFile("ro-example.po")
+]
+
+poet.PortableObjectFileToXLSX(
+	po_files=po_files_to_convert,
+	comment_types=[poet.CommentType.SOURCE],
+	output_file_path=Path("ro-example.xlsx")
+)
+
+# xls2po
+poet.XLSXToPortableObjectFile(
+	locale="ro",
+	input_file_path=Path("ro-example.xlsx"),
+	output_file_path=Path("ro-example.po")
+)
+```
+
 # Install
 
 ## From repository
@@ -30,14 +61,14 @@ information in the file, so make sure never to change these!*
 pip install .
 ```
 
-## From pypy
+## From pypi
 ```sh
 pip install po-excel-translate
 ```
 
-# Catalog to spreadshseet
+# Portable Object (.po) to spreadshseet (.xlsx)
 
-Converting one or more PO-files to an xls file is done with the `po-to-xls`
+Converting one or more PO-files to an xls file is done with the `po2xls`
 command::
 ```sh
 po2xls nl.po
@@ -52,10 +83,9 @@ po2xls -o texts.xlsx zh_CN.po zh_TW.po nl.po
 This will generate a ``texts.xlsx`` file with all simplified Chinese,
 traditional Chinese and Dutch translations.
 
-``po-to-xls`` will guess the locale for a PO file by looking at the `Language`
+`po2xls` will guess the locale for a PO file by looking at the `Language`
 key in the file metadata, falling back to the filename of no language information
-is specified. You can override this by explicitly specifying the locale on the
-commandline. For example::
+is specified. You can override this by explicitly specifying the locale on the command line. For example::
 ```sh
 po2xls nl:locales/nl/LC_MESSAGES/mydomain.po
 ```
@@ -67,14 +97,11 @@ You can also use the ``-c`` or ``--comments`` option with one of those choices:
 ``translator``, ``extracted``, ``reference``, ``all`` to add more column in the
 output.
 
-# Spreadshseet to catalog
+# Spreadshseet (.xlsx) to Portable Object (.po)
 
-Translations can be converted back from a spreadsheet into a PO-file using the
-`excel-to-po` command::
+Translations can be converted back from a spreadsheet into a PO-file using the `xls2po` command::
 ```sh
 xls2po nl texts.xlsx nl.po
 ```
 
-This will take the Dutch (`nl`) translations from `texts.xls`, and (re)create a
-``nl.po`` file using those. You can merge those into an existing po-file using
-a tool like gettext's ``msgmerge``.
+This will take the Dutch (`nl`) translations from `texts.xls`, and (re)create an `nl.po` file using those. You can merge those into an existing po-file using a tool like gettext's `msgmerge`.

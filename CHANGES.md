@@ -1,5 +1,12 @@
 Changelog
 =========
+3.0.0 - 15 November, 2019
+-------------------------
+
+- Moved to new project
+- Cleanup up project so that you can use the conversion from other python files
+- Add option for wrap/width/freeze/protected cells/range for conversion to xlsx
+
 
 1.4.2 - May 11, 2017
 -------------------------
@@ -40,7 +47,7 @@ Changelog
 1.1.0 - 25 March 2015
 ---------------------
 
-- Use `openpyxl <http://openpyxl.readthedocs.org/>`_ instead of xlrd/xlwt. This
+- Use [openpyxl](http://openpyxl.readthedocs.org/) instead of xlrd/xlwt. This
   fixes warnings about cell type conversions when opening generated xlsx files
   in Apple Numbers (and possibly others).
 
@@ -48,6 +55,6 @@ Changelog
 1.0.0 - 15 March 2015
 ---------------------
 
-- Split po-excel conversion tools out from `lingua <https://github.com/wichert/lingua>`_.
+- Split po-excel conversion tools out from [lingua](https://github.com/wichert/lingua)
 
 - Simplify CLI interfaces.
