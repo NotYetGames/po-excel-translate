@@ -2,9 +2,8 @@
 
 NOTE: Original code of this was taken from https://github.com/wichert/po-xls
 
-Not all translators are comfortable with using PO-editors such as `Poedit
-<http://www.poedit.net/>`_ or translation tools like `Transifex
-<http://trac.transifex.org/>`_. For them this package provides simple tools to
+Not all translators are comfortable with using PO-editors such as [Poedit]
+(http://www.poedit.net/) or translation tools like [Transifex](http://trac.transifex.org/). For them this package provides simple tools to
 convert PO-files to `xlsx`-files and back again. This also has another benefit:
 it is possible to include multiple languages in a single spreadsheet, which can be
 helpful when translating to multiple similar languages at the same time (for
