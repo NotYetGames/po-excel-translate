@@ -8,6 +8,7 @@ setup(
     version=po_excel_translate.__version__,
     description="Convert between Excel and PO files",
     long_description=open("README.md").read() + "\n" + open("CHANGES.md").read(),
+    long_description_content_type='text/markdown'.
     classifiers=[
         "Environment :: Console",
         "Intended Audience :: Developers",
