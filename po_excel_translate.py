@@ -1,4 +1,4 @@
-__version__ = "3.0"
+__version__ = "3.0.1"
 
 import os
 import sys
@@ -245,10 +245,11 @@ class PortableObjectFileToXLSX:
         #
 
         # Message context and id
-        column_message_context = self.get_column_message_context()
-        column_message_id = self.get_column_message_id()
+        if self.has_message_context:
+            column_message_context = self.get_column_message_context()
+            column_message_context.width = self.width_message_context
 
-        column_message_context.width = self.width_message_context
+        column_message_id = self.get_column_message_id()
         column_message_id.width = self.width_message_id
 
         # Comments
