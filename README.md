@@ -1,8 +1,6 @@
 # Translating via spreadsheets
 
-
-Not all translators are comfortable with using PO-editors such as [Poedit]
-(http://www.poedit.net/) or translation tools like [Transifex](http://trac.transifex.org/). For them this package provides simple tools to
+Not all translators are comfortable with using PO-editors such as [Poedit](http://www.poedit.net/) or translation tools like [Transifex](http://trac.transifex.org/). For them this package provides simple tools to
 convert PO-files to `xlsx`-files and back again. This also has another benefit:
 it is possible to include multiple languages in a single spreadsheet, which can be
 helpful when translating to multiple similar languages at the same time (for
@@ -11,7 +9,7 @@ example simplified and traditional chinese).
 The format for spreadsheets is simple:
 
 * If any message use a message context the first column will specify the
-  context.  If message contexts are not used this column will be skipped.
+  context. If message contexts are not used this column will be skipped.
 * The next (or first) column contains the message id. This is generally the
   canonical text.
 * A set of columns for any requested comment types (message occurrences, source
@@ -69,13 +67,13 @@ pip install po-excel-translate
 # Portable Object (.po) to spreadshseet (.xlsx)
 
 Converting one or more PO-files to an xls file is done with the `po2xls`
-command::
+command:
 ```sh
 po2xls nl.po
 ```
 
 This will create a new file `messages.xlsx` with the Dutch translations. Multiple
-PO files can be specified::
+PO files can be specified:
 ```sh
 po2xls -o texts.xlsx zh_CN.po zh_TW.po nl.po
 ```
@@ -84,8 +82,8 @@ This will generate a ``texts.xlsx`` file with all simplified Chinese,
 traditional Chinese and Dutch translations.
 
 `po2xls` will guess the locale for a PO file by looking at the `Language`
-key in the file metadata, falling back to the filename of no language information
-is specified. You can override this by explicitly specifying the locale on the command line. For example::
+key in the file metadata, falling back to the filename if no language information
+is specified. You can override this by explicitly specifying the locale on the command line. For example:
 ```sh
 po2xls nl:locales/nl/LC_MESSAGES/mydomain.po
 ```
@@ -99,7 +97,7 @@ output.
 
 # Spreadshseet (.xlsx) to Portable Object (.po)
 
-Translations can be converted back from a spreadsheet into a PO-file using the `xls2po` command::
+Translations can be converted back from a spreadsheet into a PO-file using the `xls2po` command:
 ```sh
 xls2po nl texts.xlsx nl.po
 ```
