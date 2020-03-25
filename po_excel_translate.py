@@ -1,4 +1,4 @@
-__version__ = "3.0.1"
+__version__ = "3.0.2"
 
 import os
 import sys
@@ -45,7 +45,7 @@ class CommentType(Enum):
 class PortableObjectFile:
     """ Represents a po file """
 
-    def __init__(self, file_path, locale=None):
+    def __init__(self, file_path, locale=None, encoding="utf-8"):
         self.file_path = str(file_path)
         self.po_file = None
         self.locale = locale
@@ -55,10 +55,10 @@ class PortableObjectFile:
             # The user passed a <locale>:<path> value
             self.locale, self.file_path = self.file_path.split(":", 1)
             self.file_path = Path(self.file_path).resolve()
-            self.po_file = polib.pofile(self.file_path, encoding="utf-8-sig")
+            self.po_file = polib.pofile(self.file_path, encoding=encoding)
         else:
             self.file_path = Path(self.file_path).resolve()
-            self.po_file = polib.pofile(self.file_path, encoding="utf-8-sig")
+            self.po_file = polib.pofile(self.file_path, encoding=encoding)
 
             # Fallback to metadata
             if not self.locale:
@@ -392,6 +392,7 @@ class XLSXToPortableObjectFile:
         output_file_path: Path,
         wrap_width: int = 240,
         copy_metadata_from_target: bool = True,
+        encoding="utf-8",
     ):
 
         self.input_file_path = input_file_path
@@ -402,11 +403,11 @@ class XLSXToPortableObjectFile:
         # Already has file?
         existing_po_file = None
         if output_file_path.exists():
-            existing_po_file = polib.pofile(output_file_path, encoding="utf-8-sig")
+            existing_po_file = polib.pofile(output_file_path, encoding=encoding)
 
-        self.po_file = polib.POFile(wrap_width=wrap_width, encoding="utf-8-sig")
+        self.po_file = polib.POFile(wrap_width=wrap_width, encoding=encoding)
         self.po_file.header = "This file was generated from %s" % input_file_path
-        self.po_file.metadata_is_fuzzy = True
+        self.po_file.metadata_is_fuzzy = False
         self.po_file.metadata = OrderedDict()
 
         # Copy metadata
