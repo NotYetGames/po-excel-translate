@@ -4,6 +4,8 @@
 
 # Build
 python3 -m pip install --user --upgrade setuptools wheel twine
+
+echo "Build a binary wheel and a source tarball"
 python3 setup.py sdist bdist_wheel
 
 # Upload

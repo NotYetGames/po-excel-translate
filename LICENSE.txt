@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2019, Daniel Butum
+Copyright (c) 2019 - 2020, Daniel Butum
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
