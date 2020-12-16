@@ -33,5 +33,5 @@ setup(
     zip_safe=True,
     install_requires=["click", "polib", "openpyxl"],
     entry_points={"console_scripts": ["po2xls=po2xls:main", "xls2po=xls2po:main"]},
-    python_requires=">=3.2",
+    python_requires=">=3.6",
 )
