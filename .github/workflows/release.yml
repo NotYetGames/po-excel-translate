@@ -1,0 +1,57 @@
+name: Build and publish Python 🐍 distributions
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-n-publish:
+    name: Build and publish Python 🐍 distributions
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python 3.8 🐍
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Install dependencies
+        run: python -m pip install --user --upgrade pip setuptools wheel twine
+
+      # - name: Insert version number
+      #   run: |
+      #     version=$(echo $GITHUB_REF | cut -d/ -f3)
+      #     sed -ie "/^version/s/=.*/= \"$version\"/" po_excel_translate.py
+
+      - name: Generate changelog
+        uses: scottbrenner/generate-changelog-action@master
+        id: Changelog
+        env:
+          REPO: ${{ github.repository }}
+
+      - name: Build a binary wheel and a source tarball
+        run: python setup.py sdist bdist_wheel
+
+      - name: Publish package
+        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            ${{ steps.Changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
