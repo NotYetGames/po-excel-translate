@@ -1,5 +1,3 @@
-__version__ = "3.2"
-
 import os
 import sys
 import time
@@ -15,6 +13,8 @@ from collections import OrderedDict
 from openpyxl.styles import Font, Alignment, Protection
 from openpyxl.utils import get_column_letter
 from openpyxl.cell import WriteOnlyCell
+
+
 
 
 class ColumnHeaders:
@@ -415,11 +415,15 @@ class XLSXToPortableObjectFile:
             self.po_file.metadata = existing_po_file.metadata
             # self.po_file.merge(existing_po_file)
 
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(root_dir, "VERSION")) as version_file:
+            version = version_file.read().strip()
+
         self.po_file.metadata["PO-Revision-Date"] = self.po_timestamp(input_file_path)
         self.po_file.metadata["Content-Type"] = "text/plain; charset=UTF-8"
         self.po_file.metadata["Content-Transfer-Encoding"] = "8bit"
         self.po_file.metadata["Language"] = locale
-        self.po_file.metadata["Generated-By"] = f"xls2po {__version__}"
+        self.po_file.metadata["Generated-By"] = f"xls2po {version}"
 
         # Make metadata ordered it ordered
         self.po_file.metadata = OrderedDict(self.po_file.metadata)

@@ -1,14 +1,17 @@
 from setuptools import setup, find_packages
 import sys
+import os
 
-import po_excel_translate
+root_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(root_dir, "VERSION")) as version_file:
+    version = version_file.read().strip()
 
 setup(
     name="po-excel-translate",
-    version=po_excel_translate.__version__,
+    version=version,
     description="Convert between Excel and PO files",
-    long_description=open("README.md").read() + "\n" + open("CHANGES.md").read(),
-    long_description_content_type='text/markdown',
+    long_description=open("README.md").read(),
+    long_description_content_type="text/markdown",
     classifiers=[
         "Environment :: Console",
         "Intended Audience :: Developers",
@@ -25,7 +28,7 @@ setup(
     url="https://github.com/NotYetGames/po-excel-translate",
     license="BSD",
     # packages=find_packages(),
-    py_modules=["version", "po_excel_translate", "po2xls", "xls2po"],
+    py_modules=["po_excel_translate", "po2xls", "xls2po"],
     include_package_data=True,
     zip_safe=True,
     install_requires=["click", "polib", "openpyxl"],
