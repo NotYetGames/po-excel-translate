@@ -367,7 +367,7 @@ class PortableObjectFileToXLSX:
                     # Weird case
                     cell = WriteOnlyCell(self.work_sheet, value=msg.msgstr)
                     cell.font = self.font_fuzzy
-                    row.append(cell, unlock=self.unlock_message_locale)
+                    row.append(cell)
                 else:
                     # Normal case
                     row.append(
